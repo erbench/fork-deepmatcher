@@ -155,6 +155,7 @@ class Runner(object):
              log_freq=5,
              sort_in_buckets=None,
              return_predictions=False,
+             return_stats=False,
              **kwargs):
 
         if device is None:
@@ -264,6 +265,8 @@ class Runner(object):
 
         if return_predictions:
             return predictions
+        elif return_stats:
+            return cum_stats
         else:
             return cum_stats.f1()
 
