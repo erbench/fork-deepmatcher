@@ -365,9 +365,10 @@ class Runner(object):
                 print('Done.')
             print('---------------------\n')
 
-        print('Loading best model...')
-        model.load_state(best_save_path)
-        print('Training done.')
+        if best_save_path:
+            print('Loading best model...')
+            model.load_state(best_save_path)
+            print('Training done.')
 
         return model.best_score
 
