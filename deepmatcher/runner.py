@@ -274,7 +274,7 @@ class Runner(object):
     def train(model,
               train_dataset,
               validation_dataset,
-              best_save_path,
+              best_save_path=None,
               epochs=30,
               criterion=None,
               optimizer=None,
