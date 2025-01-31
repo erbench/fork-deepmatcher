@@ -232,7 +232,7 @@ class Runner(object):
 
             if return_predictions:
                 for idx, id in enumerate(getattr(batch, id_attr)):
-                    predictions.append((id, float(output[idx, 1].exp())))
+                    predictions.append([id] + list(output[idx].detach().cpu().numpy()))
 
             if (batch_idx + 1) % log_freq == 0:
                 if progress_style == 'log':
@@ -263,7 +263,9 @@ class Runner(object):
 
         Runner._print_final_stats(epoch + 1, runtime, datatime, cum_stats)
 
-        if return_predictions:
+        if return_stats and return_predictions:
+            return predictions, cum_stats
+        elif return_predictions:
             return predictions
         elif return_stats:
             return cum_stats
