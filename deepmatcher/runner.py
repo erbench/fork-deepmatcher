@@ -276,6 +276,7 @@ class Runner(object):
     def train(model,
               train_dataset,
               validation_dataset,
+              test_dataset,
               best_save_path=None,
               epochs=30,
               criterion=None,
@@ -337,23 +338,32 @@ class Runner(object):
         if model.best_score is None:
             model.best_score = -1
         optimizer.last_acc = model.best_score
-
+        results = []
+        best_epoch = []
+        t_start = time.process_time()
         for epoch in epochs_range:
+            t_epoch = time.process_time()
             model.epoch = epoch
             Runner._run(
                 'TRAIN', model, train_dataset, criterion, optimizer, train=True, **kwargs)
+            t_train = time.process_time()
 
             score = Runner._run('EVAL', model, validation_dataset, train=False, **kwargs)
-
             optimizer.update_learning_rate(score, epoch + 1)
             model.optimizer_state = optimizer.base_optimizer.state_dict()
+            t_valid = time.process_time()
 
+            test_stats = Runner._run('EVAL', model, test_dataset, train=False, return_stats=True, **kwargs)
+            t_test = time.process_time()
+
+            curr_results = [epoch, test_stats.f1().item(), test_stats.precision().item(), test_stats.recall().item(), t_train-t_epoch, t_valid-t_train, t_test-t_valid]
+            results += [curr_results]
             new_best_found = False
             if score > model.best_score:
                 print('* Best F1:', score)
                 model.best_score = score
                 new_best_found = True
-
+                best_epoch = curr_results
                 if best_save_path and new_best_found:
                     print('Saving best model...')
                     model.save_state(best_save_path)
@@ -367,12 +377,14 @@ class Runner(object):
                 print('Done.')
             print('---------------------\n')
 
+            if t_train - t_start > 12*60*60:
+                break
         if best_save_path:
             print('Loading best model...')
             model.load_state(best_save_path)
             print('Training done.')
-
-        return model.best_score
+        results += [best_epoch]
+        return model.best_score, results
 
     def eval(model, dataset, **kwargs):
         """eval(model, dataset, device=None, batch_size=32, progress_style='bar', log_freq=5,
