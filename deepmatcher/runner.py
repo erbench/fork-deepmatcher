@@ -377,7 +377,7 @@ class Runner(object):
                 print('Done.')
             print('---------------------\n')
 
-            if (t_train - t_start)+(t_train-t_epoch) > 8*60*60: #if running the next epoch would give a total runtime
+            if (t_test - t_start)+(t_test - t_epoch) > 8*60*60: #if running the next epoch would give a total runtime
                                                                 #higher than 8 hours, it breaks.
                 break
         if best_save_path:
